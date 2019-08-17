@@ -17,11 +17,10 @@ function [ds, dmin, res] = computeShiftWeightedBisAL(AL, LD, Ls, NP, idx1, i, dm
         u = LD(i, :) - pmin;
         un = u / sqrt(sum(u'.^2,1));
 
-        %Compute interpolated shift directions
+        %Compute interpolated shift directions:
         s = Ls(min(i - idx1 + 1, length(Ls)), :) - LD(i, :);
         ns = sqrt(sum(s'.^2,1));
         sn = s / ns;
-        %plot([LD(i, 1); LD(i, 1) + s(1, 1)], [LD(i, 2); LD(i, 2) + s(1, 2)], 'r');
 
         %Compute angle A2 between un and sn
         arg = dot(un, sn) / (norm(un) * norm(sn));
@@ -38,11 +37,6 @@ function [ds, dmin, res] = computeShiftWeightedBisAL(AL, LD, Ls, NP, idx1, i, dm
         %Project point LD[i] on the buffer in A2 direction
         Q = LD(i, :) + (R + 0.001) * dmax * sn;
        
-%         B = polybuffer(AL{lmin},'lines', dmax);
-%         I = intersect(B, [LD(i, :); Q]);
-%         plot(B, 'FaceColor', 'y', 'EdgeColor', 'y', 'FaceAlpha', dmax);
-%         I(any(isnan(I), 2), :) = [];
-        
         %Create part of the buffer: line segment between L[imin], L[imin+1] given by Q1, Q2
         %Shift by bisector to the right halfplane
         b = bisector(AL{lmin}(imin, :), 0.5 * (AL{lmin}(imin, :) + AL{lmin}(imin + 1, :)), AL{lmin}(imin + 1, :));
@@ -68,7 +62,7 @@ function [ds, dmin, res] = computeShiftWeightedBisAL(AL, LD, Ls, NP, idx1, i, dm
         I3 = getLineCircleIntersection(LD(i, 1), LD(i, 2), Q(1,1), Q(1, 2), AL{lmin}(imin + 1, 1), AL{lmin}(imin + 1, 2), dmax);
         I = [I1; I2; I3];
 
-        %Shift position
+        %Shift position: in which direction the displacement is performed
         pos_shift = 1 - pos_bar_disp;
         
         %Find the most suitable intersection point on the buffer from I1 - I3
@@ -89,6 +83,7 @@ function [ds, dmin, res] = computeShiftWeightedBisAL(AL, LD, Ls, NP, idx1, i, dm
 
             %Intersection I on the same side of (LD(i), LD(i+1)) as the shift position 
             if (pos_int_disp == pos_shift)
+                %Actualize rmin: find the best intersection from the list I
                 if (ri < rmin)
                     rmin = ri;
                     kmin = k;
@@ -96,17 +91,18 @@ function [ds, dmin, res] = computeShiftWeightedBisAL(AL, LD, Ls, NP, idx1, i, dm
             end
         end
 
-        %We found point on the outer buffer in the direction of sn
-        nS = 2 * dmax;
+        %We found point on the outer buffer of L in the direction of sn
+        %Back computation of the vector sn: snb
+        nsb = 2 *dmax;
         if (rmin < 1.0e-3)
             %Compute the shift and ratio R
-            S = I(kmin, :) - LD(i, :);
-            nS = sqrt(sum(S'.^2,1));
-            Sn = S / nS;
-            R = nS / dmax;
+            sb = I(kmin, :) - LD(i, :);
+            nsb = sqrt(sum(sb'.^2,1));
+            snb = sb / nsb;
+            R = nsb / dmax;
 
             %Shift to the outer buffer
-            ds = R * dmax * Sn;
+            ds = R * dmax * snb;
             
             res = true;
             
@@ -116,10 +112,10 @@ function [ds, dmin, res] = computeShiftWeightedBisAL(AL, LD, Ls, NP, idx1, i, dm
             res = true;
         end
         
-        %The nearest barrier between 2 point has been changed
+        %The nearest barrier between 2 point has changed
         %Use the closer solution: interpolated point between (ps, pe) vs point on the buffer
         if (pos_bar_disp ~= pos_bar_disp_next)
-            if ns < nS
+            if ns < nsb
                 ds = s;
                 
                 res = true;

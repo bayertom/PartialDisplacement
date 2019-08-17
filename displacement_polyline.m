@@ -68,24 +68,24 @@ AL{7} = L7;
 LD = flip(LD);
 
 %Input parameters
-dmax = 20;
-dbuff = 6.475;
-ten = 0.0;
-smooth = 0;
-ds = 0;
+dmax = 20;              %Width of the outer buffer
+dbuff = 6.475;          %Width of the inner buffer
+ten = 0.0;              %Tension [-1, 1]
+smooth = 0;             %Addition smoothing from the k predecessors and successors
+ds = 0;                 %Additional sampling of the line with the given step         
 
-%Densify polyline
+%Densify polyline: additional sampling
 [LDs, IDs] = densifyPolyline(LD, ds);
 LDO = LD;
 LD = LDs;
 
 hold on
 
-%Select method
+%Select displacement methods: currently, M1 and M4 are supported
 methods = {'M1: normal, '; 'M2: average bisector, '; 'M3: average weighted bisector, '; 'M4: weighted bisector, greedy, '};
 method = 4; func = 1;
 
-%New polyline: displacement
+%Perform the displacement
 if (method == 1)
     %LN = displaceByMinDist(L, LD, dmax, dbuff, func);
     %LN = displaceByMinDist2(L, LD, IDs, dmax, dbuff, ten, smooth);
@@ -102,6 +102,7 @@ elseif (method == 4)
     LN = displaceByWeightedBisGreedy4AL(AL, LD, IDs, dmax, dbuff, ten, smooth);
 end
 
+%Plot results
 % if (length(AL) > 0)
     %Plot buffer
     buff1 = []; buff2 = [];
