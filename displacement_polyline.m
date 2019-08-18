@@ -44,8 +44,14 @@ LO = [];
 %LD = flip(LD);
 
 %Case 8
+%Displaced lines
 LD = [-60.736 -777.082; -76.624 -770.135; -87.882 -766.662; -93.233 -763.835; -101.049 -756.798; -104.116 -750.724; -104.236 -745.311; -102.432 -738.635; -95.939 -731.478; -87.567 -722.531; -77.646 -708.954; -75.000 -702.097; -74.505 -685.768; -73.137 -681.979; -65.561 -671.454;...
      -59.774 -663.455; -57.880 -657.245; -57.775 -649.351; -58.827 -645.562; -61.352 -642.509; -71.453 -634.195; -78.082 -629.984; -81.133 -626.722; -87.972 -617.670; -89.130 -613.144; -90.603 -600.935; -90.287 -590.304; -89.551 -583.778; -88.709 -578.306; -85.552 -570.938; -78.713 -564.728; -68.718 -557.992];
+LD2 =[-33.292 -559.311; -37.531 -561.779; -38.071 -566.482; -32.444 -572.418; -28.127 -574.886; -24.119 -579.589; -23.348 -584.137; -27.819 -589.689; -33.215 -594.238; -43.852 -600.945; -51.945 -604.954; -54.258 -613.281; -54.643 -621.685; -53.025 -623.767; -42.927 -631.014; ...
+     -38.533 -636.257; -38.456 -639.803; -41.925 -647.436; -48.477 -656.071; -48.400 -661.623; -53.718 -681.360; -64.741 -695.315; -68.749 -704.027; -66.591 -719.447; -73.451 -730.550; -79.541 -736.795; -84.628 -741.035; -97.038 -745.815; -97.655 -752.754; -87.634 -760.183; ...
+     -75.521 -762.809; -59.426 -760.606; -54.097 -758.448; -47.842 -753.998; -43.173 -753.954; -34.408 -756.773; -33.747 -763.734; -25.687 -773.702; -23.220 -781.258]    
+
+%Barriers 
 L1 =[-30.840 -776.285; -33.891 -770.707; -36.311 -768.917; -43.255 -765.444; -49.884 -763.970; -77.556 -767.654; -81.821 -767.598; -86.337 -766.537; -92.462 -762.570; -99.785 -755.971; -103.829 -750.649; -103.888 -747.114; -102.475 -743.265; -94.343 -740.795; -85.307 -736.053; ...
      -80.257 -723.508; -74.176 -706.084; -66.995 -685.257; -62.323 -675.771; -58.750 -664.842; -55.623 -657.418; -54.529 -652.023; -64.934 -614.802; -62.872 -608.066; -51.157 -582.256; -42.052 -559.263]
 L2 = [-99.555 -585.486; -99.555 -600.396; -94.624 -600.396; -94.624 -585.486; -99.555 -585.486]
@@ -54,9 +60,8 @@ L4 = [-43.381 -591.612; -38.113 -586.231; -36.011 -588.288; -41.279 -593.670; -4
 L5 = [-37.332 -580.495; -32.737 -584.531; -29.735 -581.113; -34.330 -577.077; -37.332 -580.495]
 L6 = [-45.012 -621.110; -39.633 -625.146; -41.503 -627.639; -46.882 -623.603; -45.012 -621.110]
 L7 = [-87.210 -753.316; -81.767 -753.316; -81.767 -749.600; -87.210 -749.600; -87.210 -753.316]
-LD2 =[-33.292 -559.311; -37.531 -561.779; -38.071 -566.482; -32.444 -572.418; -28.127 -574.886; -24.119 -579.589; -23.348 -584.137; -27.819 -589.689; -33.215 -594.238; -43.852 -600.945; -51.945 -604.954; -54.258 -613.281; -54.643 -621.685; -53.025 -623.767; -42.927 -631.014; ...
-     -38.533 -636.257; -38.456 -639.803; -41.925 -647.436; -48.477 -656.071; -48.400 -661.623; -53.718 -681.360; -64.741 -695.315; -68.749 -704.027; -66.591 -719.447; -73.451 -730.550; -79.541 -736.795; -84.628 -741.035; -97.038 -745.815; -97.655 -752.754; -87.634 -760.183; ...
-     -75.521 -762.809; -59.426 -760.606; -54.097 -758.448; -47.842 -753.998; -43.173 -753.954; -34.408 -756.773; -33.747 -763.734; -25.687 -773.702; -23.220 -781.258]    
+
+%Add to the lists
 AL = cell(1, 7);
 AL{1} = L1; 
 AL{2} = L2; 
@@ -87,76 +92,34 @@ method = 4; func = 1;
 
 %Perform the displacement
 if (method == 1)
-    %LN = displaceByMinDist(L, LD, dmax, dbuff, func);
-    %LN = displaceByMinDist2(L, LD, IDs, dmax, dbuff, ten, smooth);
     LN = displaceByMinDist2AL(AL, LD, IDs, dmax, dbuff, ten, smooth);
-%elseif (method == 2)
-%    LN = displaceByMinDistAndBis(L, LD, dmax, dbuff, func);
-%elseif (method == 3)
-%    LN = displaceByMinDistAndWeightedBis(L, LD, dmax, dbuff, func);
 elseif (method == 4)
-    %LN = displaceByWeightedBisGreedy(L, LD, IDs, dmax, dbuff, ten, func);
-    %LN = displaceByWeightedBisGreedy2(L, LD, IDs, dmax, dbuff, ten, smooth);
-    %LN = displaceByWeightedBisGreedy3(L, LD, IDs, dmax, dbuff, ten, smooth);
-    %LN = displaceByWeightedBisGreedy3AL(AL, LD, IDs, dmax, dbuff, ten, smooth);
     LN = displaceByWeightedBisGreedy4AL(AL, LD, IDs, dmax, dbuff, ten, smooth);
 end
 
-%Plot results
-% if (length(AL) > 0)
-    %Plot buffer
-    buff1 = []; buff2 = [];
-    for i = 1 : length(AL)
-        buff1 = polybuffer(AL{i},'lines', dbuff);
-        buff2 = polybuffer(AL{i},'lines', dmax);
-
-        plot(buff2, 'FaceColor', 'y', 'EdgeColor', 'y', 'FaceAlpha',0.3, 'DisplayName','Buffer outer, propagation');
-        plot(buff1, 'FaceColor', [0.9290 0.6940 0.1250], 'EdgeColor', [0.9290 0.6940 0.1250], 'FaceAlpha',0.2, 'DisplayName','Buffer inner, displacement');
-    end
-
-    %Plot original polyline and barriers
-    h2 = plot (LDO(:, 1), LDO(:, 2), 'b-*', 'LineWidth', 2, 'DisplayName','Source polyline');
-
-    for i = 1 : length(AL)
-        plot(AL{i}(:, 1), AL{i}(:, 2), 'k', 'LineWidth', 2, 'DisplayName','Barrier');
-    end
-
-    %Plot new line
-    plot(LN(:, 1), LN(:, 2), 'r-*', 'LineWidth', 2, 'DisplayName','Displaced polyline');
-
-    %Plot old solution
-    if (length(LO) > 1) 
-        plot(LO(:, 1), LO(:, 2), 'g', 'LineWidth', 2, 'DisplayName','Old solution');
-    end;
+%Plot buffer
+buff1 = []; buff2 = [];
+for i = 1 : length(AL)
+    buff1 = polybuffer(AL{i},'lines', dbuff);
+    buff2 = polybuffer(AL{i},'lines', dmax);
     
-%  else
-%     %Plot buffer
-%     buff1 = polybuffer(L,'lines', dbuff);
-%     buff2 = polybuffer(L,'lines', dmax);
-%     h1 = plot(buff2, 'FaceColor', 'y', 'EdgeColor', 'y', 'FaceAlpha',0.3, 'DisplayName','Buffer outer, propagation');
-%     h0 = plot(buff1, 'FaceColor', [0.9290 0.6940 0.1250], 'EdgeColor', [0.9290 0.6940 0.1250], 'FaceAlpha',0.2, 'DisplayName','Buffer inner, displacement');
-% 
-%     %Plot original polyline and barrier
-%     h2 = plot (LDO(:, 1), LDO(:, 2), 'b-*', 'LineWidth', 2, 'DisplayName','Source polyline');
-%     h3 = plot(L(:, 1), L(:, 2), 'k', 'LineWidth', 2, 'DisplayName','Barrier');
-% 
-%     %Plot new line
-%     h4 = plot(LN(:, 1), LN(:, 2), 'r-*', 'LineWidth', 2, 'DisplayName','Displaced polyline');
-% 
-%     %Plot old solution
-%     if (length(LO) > 1) 
-%         h5 = plot(LO(:, 1), LO(:, 2), 'g', 'LineWidth', 2, 'DisplayName','Old solution');
-%     end;
-% 
-%     axis equal
-%     title_text = strcat(methods(method, :), strcat('buff. in= ', strcat( num2str(dbuff), strcat(' m, ', 'buff. out= ', strcat(num2str(dmax), 'm', strcat(', tension= ', num2str(ten)))))));
-%     title(title_text);
-%     legend([h0, h1, h2, h3, h4]);
-%     %legend([h0, h1, h2, h3]);    
-% end
+    plot(buff2, 'FaceColor', 'y', 'EdgeColor', 'y', 'FaceAlpha',0.3, 'DisplayName','Buffer outer, propagation');
+    plot(buff1, 'FaceColor', [0.9290 0.6940 0.1250], 'EdgeColor', [0.9290 0.6940 0.1250], 'FaceAlpha',0.2, 'DisplayName','Buffer inner, displacement');
+end
+
+%Plot original polyline and barriers
+h2 = plot (LDO(:, 1), LDO(:, 2), 'b-*', 'LineWidth', 2, 'DisplayName','Source polyline');
+
+for i = 1 : length(AL)
+    plot(AL{i}(:, 1), AL{i}(:, 2), 'k', 'LineWidth', 2, 'DisplayName','Barrier');
+end
+
+%Plot new line
+plot(LN(:, 1), LN(:, 2), 'r-*', 'LineWidth', 2, 'DisplayName','Displaced polyline');
+
+%Plot old solution
+if (length(LO) > 1)
+    plot(LO(:, 1), LO(:, 2), 'g', 'LineWidth', 2, 'DisplayName','Old solution');
+end
    
 axis equal
-%title_text = strcat(methods(method, :), strcat('buff. in= ', strcat( num2str(dbuff), strcat(' m, ', 'buff. out= ', strcat(num2str(dmax), 'm', strcat(', tension= ', num2str(ten)))))));
-%title(title_text);
-%legend([h0, h1, h2, h3, h4]);
-%legend([h0, h1, h2, h3]);
