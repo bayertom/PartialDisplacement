@@ -1,4 +1,4 @@
-function [LN] = displaceByWeightedBisGreedy4AL(AL, LD, IDX, dmax, dbuff, ten, smooth)
+function [LN] = displaceByWeightedBisGreedy4AL(AL, LD, IDX, d_buff_outer, d_buff_inner, ten, smooth)
     %Initialize new polyline: a copy of the displaced one
     LN = LD;
 
@@ -14,7 +14,7 @@ function [LN] = displaceByWeightedBisGreedy4AL(AL, LD, IDX, dmax, dbuff, ten, sm
     for i = 1 : ni
         %Get distance of LD(i) to the closest point of L
         %[ilmin, imin, dimin, pimin, cimin] = findNearestPointAL(LD(IDX(i), :), AL);
-        [ilmin, imin, dimin, pimin, cimin, points, d] = findPointsCloserThanAL(LD(IDX(i), :), AL, dmax);
+        [ilmin, imin, dimin, pimin, cimin, points, d] = findPointsCloserThanAL(LD(IDX(i), :), AL, d_buff_outer);
 
         %Position of pmin against LD (barrier against displaced)
         pos_bar_disp = getPointPolylinePosition(pimin, LD(IDX, :));
@@ -29,7 +29,7 @@ function [LN] = displaceByWeightedBisGreedy4AL(AL, LD, IDX, dmax, dbuff, ten, sm
         pos_disp_bar = getPointPolylinePosition(LD(IDX(i), :), AL{ilmin});
         
         %Compute r
-        r = 1 - dimin ./ dmax;
+        r = 1 - dimin ./ d_buff_outer;
 
         %Get normalized bisector bn
         if (i == 1)
@@ -45,7 +45,7 @@ function [LN] = displaceByWeightedBisGreedy4AL(AL, LD, IDX, dmax, dbuff, ten, sm
             bn = - bn;
         end
         
-        plot([LD(IDX(i), 1); LD(IDX(i), 1) + bn(:, 1)], [LD(IDX(i), 2); LD(IDX(i), 2) + bn(:, 2)], 'b');
+        %plot([LD(IDX(i), 1); LD(IDX(i), 1) + bn(:, 1)], [LD(IDX(i), 2); LD(IDX(i), 2) + bn(:, 2)], 'b');
 
         %Compute un as the weighted average of vectors to the closest points
         if length(points) ~= 0
@@ -61,15 +61,15 @@ function [LN] = displaceByWeightedBisGreedy4AL(AL, LD, IDX, dmax, dbuff, ten, sm
             u = LD(IDX(i), :) - pimin;
             un = u / sqrt(sum(u'.^2,1));
         end
-        plot([LD(IDX(i), 1); LD(IDX(i), 1) + un(:, 1)], [LD(IDX(i), 2); LD(IDX(i), 2) + un(:, 2)], 'g');
+        %plot([LD(IDX(i), 1); LD(IDX(i), 1) + un(:, 1)], [LD(IDX(i), 2); LD(IDX(i), 2) + un(:, 2)], 'g');
        
 
         %Compute the shift direction sn: average of both vectors (un, t*bn)
-        t = (1 - r)* dmax;
+        t = (1 - r)* d_buff_outer;
         s = 0.5 * (bn + t^(1 + (ten + 1)/2) * un);
         %s = 0.5 * (bn + un);
         sn = s / sqrt(sum(s'.^2,1));
-        plot([LD(IDX(i), 1); LD(IDX(i), 1) + sn(:, 1)], [LD(IDX(i), 2); LD(IDX(i), 2) + sn(:, 2)], 'r');
+        %plot([LD(IDX(i), 1); LD(IDX(i), 1) + sn(:, 1)], [LD(IDX(i), 2); LD(IDX(i), 2) + sn(:, 2)], 'r');
 
         %Store values to the matrix
         O = [O; [IDX(i), sn, r, pos_bar_disp, pos_disp_bar]];
@@ -94,7 +94,7 @@ function [LN] = displaceByWeightedBisGreedy4AL(AL, LD, IDX, dmax, dbuff, ten, sm
             NP(j, :) = [jlmin, jmin, djmin, pjmin];
             
             %Point inside the buffer
-            if (djmin < dmax)
+            if (djmin < d_buff_outer)
                 %New start point
                 if (inside == false)
                     S(index, 1) = j;
@@ -165,7 +165,7 @@ function [LN] = displaceByWeightedBisGreedy4AL(AL, LD, IDX, dmax, dbuff, ten, sm
         end
         
         %Initialize shift behind the inner buffer
-        dsmin = dmax;
+        dsmin = d_buff_outer;
         
         %Process all displaced points inside the outter buffer
         k = idx1;
@@ -181,8 +181,8 @@ function [LN] = displaceByWeightedBisGreedy4AL(AL, LD, IDX, dmax, dbuff, ten, sm
             %We found start point of the segment: densify segment
             elseif ((k == O(j, 1)) || (k == idx1))              
                 %Compute new points on lines of shifts
-                ps = LD(O(j, 1), :) + dmax * O(j, 2:3);
-                pe = LD(O(j + 1, 1), :) + dmax * O(j + 1, 2:3);
+                ps = LD(O(j, 1), :) + d_buff_outer * O(j, 2:3);
+                pe = LD(O(j + 1, 1), :) + d_buff_outer * O(j + 1, 2:3);
                 use = pe - ps;
                 dse = sqrt(sum(use'.^2,1));
                 %plot([ps(:,1), pe(:, 1)],[ps(:,2), pe(:, 2)]);
@@ -192,7 +192,7 @@ function [LN] = displaceByWeightedBisGreedy4AL(AL, LD, IDX, dmax, dbuff, ten, sm
                 [Ls, IDs] = densifyPolyline([ps; pe], h);
                 
                 %for hh = 1 : length(Ls)
-                %    plot(Ls(hh, 1), Ls(hh, 2), 'o');
+                %   plot(Ls(hh, 1), Ls(hh, 2), 'o');
                 %end
             end
             
@@ -203,7 +203,7 @@ function [LN] = displaceByWeightedBisGreedy4AL(AL, LD, IDX, dmax, dbuff, ten, sm
                 
                 %Compute shifts to the outer buffer for a given point LD(k)
                 %Store only suitable points
-                [ds, dmink, res] = computeShiftWeightedBisGreedyAL(AL, LD, Ls, NP, O(j, 1), k, dmax, O(j, 5), O(j, 6), O(j+1, 5));
+                [ds, dmink, res] = computeShiftWeightedBisGreedyAL(AL, LD, Ls, NP, O(j, 1), k, d_buff_outer, O(j, 5), O(j, 6), O(j+1, 5));
 
                 if (res)
                     dSk = [dSk; ds];
@@ -224,7 +224,7 @@ function [LN] = displaceByWeightedBisGreedy4AL(AL, LD, IDX, dmax, dbuff, ten, sm
        dSk = applyPropagation(dSk, ten);
         
        %Shift point to the inner buffer, use the longest shift generated by closest vertex
-       fr = (dbuff - dsmin)/(dmax - dsmin);
+       fr = (d_buff_inner - dsmin)/(d_buff_outer - dsmin);
        dSS = fr * dSk;
        %dSS = dSk;
        
@@ -253,8 +253,8 @@ function [LN] = displaceByWeightedBisGreedy4AL(AL, LD, IDX, dmax, dbuff, ten, sm
     %Apply LLR simplification
     LN = simplifyLLR(LN, 1.0001, 0.0);
     
-    %for (i = 1 : length(LN))
-    %    plot([LD(i, 1); LD(i, 1) + dSA(i, 1)], [LD(i, 2); LD(i, 2) + dSA(i, 2)], 'r');
+    %for (i = 1 : length(LDO))
+    %    plot([LDO(i, 1); LDO(i, 1) + dSA(i, 1)], [LDO(i, 2); LDO(i, 2) + dSA(i, 2)], 'r');
     %end
    
 end

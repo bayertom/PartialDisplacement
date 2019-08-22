@@ -1,6 +1,6 @@
-function [ds, dmin, res] = computeShiftWeightedBisAL(AL, LD, Ls, NP, idx1, i, dmax, pos_bar_disp, pos_disp_bar, pos_bar_disp_next)
+function [ds, dmin, res] = computeShiftWeightedBisAL(AL, LD, Ls, NP, idx1, i, d_buff_outer, pos_bar_disp, pos_disp_bar, pos_bar_disp_next)
     %Interpolate direction vectors sn for all intermediate points of the segment
-    dmin = dmax;
+    dmin = d_buff_outer;
     ds = 0;
     res = false;
     
@@ -8,10 +8,10 @@ function [ds, dmin, res] = computeShiftWeightedBisAL(AL, LD, Ls, NP, idx1, i, dm
     lmin = NP(i, 1); imin = NP(i, 2); dmin = NP(i, 3); pmin = NP(i, 4:5);
     
     %Shift vertex by the ratio
-    if (dmin < dmax)
+    if (dmin < d_buff_outer)
 
         %Point inside outer buffer, compute r
-        r = 1 - dmin ./ dmax;
+        r = 1 - dmin ./ d_buff_outer;
 
         %Get vector LN(i) - pmin
         u = LD(i, :) - pmin;
@@ -35,7 +35,7 @@ function [ds, dmin, res] = computeShiftWeightedBisAL(AL, LD, Ls, NP, idx1, i, dm
         end
 
         %Project point LD[i] on the buffer in A2 direction
-        Q = LD(i, :) + (R + 0.001) * dmax * sn;
+        Q = LD(i, :) + (R + 0.001) * d_buff_outer * sn;
        
         %Create part of the buffer: line segment between L[imin], L[imin+1] given by Q1, Q2
         %Shift by bisector to the right halfplane
@@ -47,8 +47,9 @@ function [ds, dmin, res] = computeShiftWeightedBisAL(AL, LD, Ls, NP, idx1, i, dm
             bn = - bn;
         end
         
-        Q1 = AL{lmin}(imin, :) + dmax * bn;
-        Q2 = AL{lmin}(imin + 1, :) + dmax * bn;
+        Q1 = AL{lmin}(imin, :) + d_buff_outer * bn;
+        Q2 = AL{lmin}(imin + 1, :) + d_buff_outer * bn;
+        
         %plot([Q1(1, 1); Q2(1, 1)], [Q1(1, 2); Q2(1, 2)], 'k');
 
         %Test intersection with:
@@ -57,9 +58,9 @@ function [ds, dmin, res] = computeShiftWeightedBisAL(AL, LD, Ls, NP, idx1, i, dm
         %   cirle at L[i+1]
         I1 = []; I2 = []; I3 = [];
 
-        I1 = getLineCircleIntersection(LD(i, 1), LD(i, 2), Q(1,1), Q(1, 2), AL{lmin}(imin, 1), AL{lmin}(imin, 2), dmax);
+        I1 = getLineCircleIntersection(LD(i, 1), LD(i, 2), Q(1,1), Q(1, 2), AL{lmin}(imin, 1), AL{lmin}(imin, 2), d_buff_outer);
         I2 = get2LineSegmentsIntersection(LD(i, 1), LD(i, 2), Q(1,1), Q(1, 2), Q1(1, 1), Q1(1, 2), Q2(1, 1), Q2(1, 2));
-        I3 = getLineCircleIntersection(LD(i, 1), LD(i, 2), Q(1,1), Q(1, 2), AL{lmin}(imin + 1, 1), AL{lmin}(imin + 1, 2), dmax);
+        I3 = getLineCircleIntersection(LD(i, 1), LD(i, 2), Q(1,1), Q(1, 2), AL{lmin}(imin + 1, 1), AL{lmin}(imin + 1, 2), d_buff_outer);
         I = [I1; I2; I3];
 
         %Shift position: in which direction the displacement is performed
@@ -72,7 +73,7 @@ function [ds, dmin, res] = computeShiftWeightedBisAL(AL, LD, Ls, NP, idx1, i, dm
         for k = 1 : mi
             %Compute r(I)
             [imink, dmink, pmink, cmink] = findNearestPoint2(I(k, :), AL{lmin});
-            ri = abs(1 - dmink ./ dmax);
+            ri = abs(1 - dmink ./ d_buff_outer);
 
             %Position of I according to (LD(i), LD(i+1))
             if (i == length(LD))
@@ -93,22 +94,22 @@ function [ds, dmin, res] = computeShiftWeightedBisAL(AL, LD, Ls, NP, idx1, i, dm
 
         %We found point on the outer buffer of L in the direction of sn
         %Back computation of the vector sn: snb
-        nsb = 2 *dmax;
+        nsb = 2 *d_buff_outer;
         if (rmin < 1.0e-3)
             %Compute the shift and ratio R
             sb = I(kmin, :) - LD(i, :);
             nsb = sqrt(sum(sb'.^2,1));
             snb = sb / nsb;
-            R = nsb / dmax;
+            R = nsb / d_buff_outer;
 
             %Shift to the outer buffer
-            ds = R * dmax * snb;
+            ds = R * d_buff_outer * snb;
             
             res = true;
             
         %Otherwise, use the direction to the shortest point of L
         else
-            ds = r *dmax * sn;
+            ds = r *d_buff_outer * un;
             res = true;
         end
         
